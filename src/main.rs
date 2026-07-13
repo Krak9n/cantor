@@ -1,3 +1,5 @@
+pub mod modules;
+
 use smithay_client_toolkit::{
     compositor::{CompositorHandler, CompositorState},
     delegate_compositor, delegate_layer, delegate_output, delegate_registry, delegate_shm,
@@ -19,7 +21,7 @@ use wayland_client::{
 };
 
 const HEIGHT: u32 = 32; // this would be just the height of the bar in pixel. gonna rewrite to smth better i think
-const COLOR_ARGB: u32 = 0xFF1E1E2E; // background of this sheisse
+const COLOR_ARGB: u32 = 0xFF000000; // background of this sheisse
 
 fn main() {
     let cons = Connection::connect_to_env().expect("failed to onnect to wayland compositor");

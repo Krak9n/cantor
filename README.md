@@ -1,3 +1,8 @@
-simple STATUS BAR for WAYLAND.
+Simple STATUS BAR for WAYLAND.
 
-**WIP**
+### **WIP**
+
+Roadmap:
+* basic coloring of the bar
+* displaying modules
+* editing through a custom toml file
