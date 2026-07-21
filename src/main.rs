@@ -24,12 +24,12 @@ const HEIGHT: u32 = 32; // this would be just the height of the bar in pixel. go
 const COLOR_ARGB: u32 = 0xFF000000; // background of this sheisse
 
 fn main() {
-    let cons = Connection::connect_to_env().expect("failed to onnect to wayland compositor");
+    let cons = Connection::connect_to_env().expect("Failed to connect to Wayland compositor");
     let (globals, mut event_queue) = registry_queue_init(&cons).unwrap(); // sppam
     let qh = event_queue.handle(); // our connection
 
     let compositor = CompositorState::bind(&globals, &qh).expect("wl_compositor is not available");
-    let layer_shell = LayerShell::bind(&globals, &qh).expect("layer shell not availabel");
+    let layer_shell = LayerShell::bind(&globals, &qh).expect("Layer shell not available");
     let shm = Shm::bind(&globals, &qh).expect("wl_shm not available");
     let surface = compositor.create_surface(&qh);
 
@@ -46,7 +46,7 @@ fn main() {
     layer.set_keyboard_interactivity(KeyboardInteractivity::None);
     layer.commit();
 
-    let pool = SlotPool::new(256 * 1024, &shm).expect("failed to create shm pool");
+    let pool = SlotPool::new(256 * 1024, &shm).expect("Failed to create shm pool");
     let mut app = App {
         registry_state: RegistryState::new(&globals),
         output_state: OutputState::new(&globals, &qh),
@@ -100,7 +100,7 @@ impl App {
         let surface = self.layer.wl_surface();
         surface.damage_buffer(0, 0, self.width as i32, self.height as i32);
         surface.frame(qh, surface.clone());
-        buffer.attach_to(surface).expect("failed to attach");
+        buffer.attach_to(surface).expect("Failed to attach!");
         surface.commit();
     }
 }
