@@ -28,6 +28,10 @@ const HEIGHT: u32 = 32; // this would be just the height of the bar in pixel. go
 const COLOR_ARGB: u32 = 0xFF000000; // background of this sheisse
 
 fn main() {
+    // main config
+    let c = bar::read_the_config();
+    println!("{:?}", c);
+
     let cons = Connection::connect_to_env().expect("Failed to connect to Wayland compositor");
     let (globals, mut event_queue) = registry_queue_init(&cons).unwrap(); // sppam
     let qh = event_queue.handle(); // our connection
@@ -62,8 +66,6 @@ fn main() {
         configured: true,
         exit: false,
     };
-    let c = bar::read_the_config();
-    println!("{:?}", c);
 
     loop { // here we go again
         event_queue.blocking_dispatch(&mut app).unwrap();

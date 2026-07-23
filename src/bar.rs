@@ -1,5 +1,5 @@
 const CONFIG_PATH: &str = "~/.config/cantor/config.toml";
-const ALTERNATIVE_CONFIG_PATH: &str = "../example.toml";
+const ALTERNATIVE_CONFIG_PATH: &str = "example.toml";
 
 use std::path::{Path, PathBuf};
 use std::fs;
@@ -81,4 +81,3 @@ pub fn read_the_config() -> Config {
     toml::from_str(&contents)
         .unwrap_or_else(|e| panic!("Failed to parse the config {:?}: {}", config, e))
 }
-
