@@ -1,0 +1,37 @@
+[enabled]
+battery = true
+time = true
+workspaces = true
+cpu = true
+memory = true
+
+[general]
+color = "#000000"
+height = 32
+border = true
+border_color = "#FFFFFF"
+
+[modules.workspaces]
+position = "left"
+icons = { 1 = "一", 2 = "二", 3 = "三", 4 = "四", 5 = "五", 6 = "六", 7 = "七", 8 = "八", 9 = "九" }
+color = "#000000"
+
+[modules.time]
+position = "right"
+color = "#000000"
+prompt = "{}"
+
+[modules.battery]
+position = "right"
+color = "#000000"
+prompt = "{}"
+
+[modules.cpu]
+position = "right"
+color = "#000000"
+prompt = "{}"
+
+[modules.memory]
+position = "right"
+color = "#000000"
+prompt = "{}"

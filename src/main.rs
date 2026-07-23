@@ -1,4 +1,8 @@
-pub mod modules;
+mod modules;
+use modules::{
+    battery, cpu, memory, time, volume, workspaces,
+};
+mod bar;
 
 use smithay_client_toolkit::{
     compositor::{CompositorHandler, CompositorState},
@@ -7,7 +11,7 @@ use smithay_client_toolkit::{
     registry::{ProvidesRegistryState, RegistryState},
     registry_handlers,
     shell::{
-        WaylandSurface,
+       WaylandSurface,
         wlr_layer::{
             Anchor, KeyboardInteractivity, Layer, LayerShell, LayerShellHandler, LayerSurface, LayerSurfaceConfigure,
         },
@@ -58,6 +62,8 @@ fn main() {
         configured: true,
         exit: false,
     };
+    let c = bar::read_the_config();
+    println!("{:?}", c);
 
     loop { // here we go again
         event_queue.blocking_dispatch(&mut app).unwrap();

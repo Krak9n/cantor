@@ -1,4 +1,5 @@
-Simple status bar for Wayland.
+Simple status bar for Wayland. 
+Tested on **Hyprland**.
 
 **WIP. Not ready for publishing.**
 
@@ -24,27 +25,39 @@ $ mkdir -p ~/.config/cantor
 $ cp -f extras/example.toml ~/.config/cantor
 ```
 
-**2.** The file  
+**2.** The file   
+Each module, if not workspaces, should have exactly three arguments:
+* position
+* color
+* prompt
+
 **2.1.** In modules you just assign booleans to the values you want or don't want to use.  
-For example
+Example:  
 ```rust
-[modules]
+[enabled]
 battery = true
 time = false
 workspaces = true
 ```
-  
-**2.2.** You can change the characters on workspaces, or change the values icons.  
-  
-Just make sure you got the right font on your OS. Here's the [quick script](https://github.com/polybar/polybar/wiki/Fonts#find-fonts-for-glyphs) by polybar. Requires you to have Perl installed on the system.  
+
+**2.2.** General bar settings.
+Here you should specify the background color, height, border, etc.
 ```rust
-[modules.bar]
-1 = "1"
-2 = "two"
-3 = "三"
+[general]
+color = "#FFFFFF"
+height = 20
+border = true
+border_color = "#000000"
 ```
 
-**2.3.** Changing the icons. Here "{}" is where the configured output will be printed. Put it wherever you want.  
+**2.3.** You can change the icons for workspaces. Just make sure you got the right font on your OS.  
+Here's the [quick script](https://github.com/polybar/polybar/wiki/Fonts#find-fonts-for-glyphs) by polybar. Requires you to have Perl installed on the system.  
+```rust
+[modules.workspaces]
+icons = { 1 = "1", 2 = "2", 3 = "none" }
+```
+
+**2.4.** Changing the prompt. Here "{}" is where the configured output will be printed. Put it wherever you want.  
 ```rust
 [modules.battery]
 prompt = "𓈆 {}"
@@ -52,11 +65,18 @@ prompt = "𓈆 {}"
   
 This works for each module written in the initial **[modules]** section.  
 
-**2.3.** Changing the colors  
+**2.5.** Changing the colors  
 Just add the hex value. This would change the whole prompt.  
 ```rust
 [modules.time]
 color = "#A11313"
+```
+  
+**2.6.** Positions  
+Same as for the color. It is either **right**, **left**, or **center**.  
+```rust
+[modules.battery]
+position = "right"
 ```
 
 ---
