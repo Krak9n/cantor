@@ -5,19 +5,19 @@ Tested on **Hyprland**.
 
 ---
 ### Installation
-* Arch Linux
+* **Arch Linux**  
 Users of Arch Linux can install the package from [aur](https://aur.archlinux.org/packages/cantor).
 ```bash
 $ yay -S cantor
 # systemctl enable --now cantor.service
 ```
 
-* Compiling from source
+* **Compiling from source**  
 You can compile everything from source using the `install.sh` script, which provides all that needed to build the package.
 
 ---
 ### Configuration
-**1**. Putting pieces  
+**1. Putting pieces**  
 Cantor reads the **config.toml** file located under **~/.config/cantor/**.
 You can copy the **extras/example.toml** that is in the root of this package, to the config directory.
 ```bash
@@ -25,13 +25,14 @@ $ mkdir -p ~/.config/cantor
 $ cp -f extras/example.toml ~/.config/cantor
 ```
 
-**2.** The file   
+**2. Basic configuration**   
 Each module, if not workspaces, should have exactly three arguments:
 * position
 * color
 * prompt
 
-**2.1.** In modules you just assign booleans to the values you want or don't want to use.  
+**2.1. Allowing modules**  
+In modules you just assign booleans to the values you want or don't want to use.  
 Example:  
 ```rust
 [enabled]
@@ -40,7 +41,7 @@ time = false
 workspaces = true
 ```
 
-**2.2.** General bar settings.
+**2.2. General bar settings.**  
 Here you should specify the background color, height, border, etc.
 ```rust
 [general]
@@ -50,14 +51,16 @@ border = true
 border_color = "#000000"
 ```
 
-**2.3.** You can change the icons for workspaces. Just make sure you got the right font on your OS.  
-Here's the [quick script](https://github.com/polybar/polybar/wiki/Fonts#find-fonts-for-glyphs) by polybar. Requires you to have Perl installed on the system.  
+**2.3. Icons**  
+You can change the icons for workspaces. Just make sure you got the right font on your OS.  
+Here's the [quick script](https://github.com/polybar/polybar/wiki/Fonts#find-fonts-for-glyphs) by polybar. Requires you to have **Perl** installed on the system.  
 ```rust
 [modules.workspaces]
 icons = { 1 = "1", 2 = "2", 3 = "none" }
 ```
 
-**2.4.** Changing the prompt. Here "{}" is where the configured output will be printed. Put it wherever you want.  
+**2.4. The prompt.**  
+Here "{}" is where the configured output will be printed. Put it wherever you want.  
 ```rust
 [modules.battery]
 prompt = "𓈆 {}"
@@ -65,14 +68,14 @@ prompt = "𓈆 {}"
   
 This works for each module written in the initial **[modules]** section.  
 
-**2.5.** Changing the colors  
+**2.5. The colors**   
 Just add the hex value. This would change the whole prompt.  
 ```rust
 [modules.time]
 color = "#A11313"
 ```
   
-**2.6.** Positions  
+**2.6. Positions**    
 Same as for the color. It is either **right**, **left**, or **center**.  
 ```rust
 [modules.battery]
