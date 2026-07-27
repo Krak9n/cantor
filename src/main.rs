@@ -3,6 +3,7 @@ use modules::{
     battery, cpu, memory, time, volume, workspaces,
 };
 mod bar;
+mod connections;
 
 use smithay_client_toolkit::{
     compositor::{CompositorHandler, CompositorState},
@@ -23,11 +24,15 @@ use wayland_client::{
     protocol::{wl_output, wl_shm, wl_surface},
     Connection, QueueHandle,
 };
+use calloop::EventLoop;
+use calloop_wayland_source::WaylandSource;
+use ab_glyph::{point, Font, FontRef, Glyph};
 
 const HEIGHT: u32 = 32; // this would be just the height of the bar in pixel. gonna rewrite to smth better i think
 const COLOR_ARGB: u32 = 0xFF000000; // background of this sheisse
 
-fn main() {
+#[tokio::main]
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // main config
     let c = bar::read_the_config();
     println!("{:?}", c);
@@ -41,6 +46,15 @@ fn main() {
     let shm = Shm::bind(&globals, &qh).expect("wl_shm not available");
     let surface = compositor.create_surface(&qh);
 
+    // callop stack
+    let mut event_loop: EventLoop<()> = EventLoop::try_new().unwrap();
+    let loop_handle = event_loop.handle();
+    
+    // temporary. add some recursive search idk later to find smth on the system
+    let font = FontRef::try_from_slice(include_bytes!("/usr/share/fonts/TTF/Iosevka-Regular.ttf"))?;
+    //zbus
+    let greeter = connections::Greeter { count: 0 };
+    let _conn = connectionh
     let layer = layer_shell.create_layer_surface(
         &qh,
         surface,
@@ -69,8 +83,9 @@ fn main() {
 
     loop { // here we go again
         event_queue.blocking_dispatch(&mut app).unwrap();
+
         if app.exit {
-            break; // stupid ass end
+            break Ok(()) // stupid ass end
         }
     }
 }
