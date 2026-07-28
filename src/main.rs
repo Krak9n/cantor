@@ -28,14 +28,11 @@ use calloop::EventLoop;
 use calloop_wayland_source::WaylandSource;
 use ab_glyph::{point, Font, FontRef, Glyph};
 
-const HEIGHT: u32 = 32; // this would be just the height of the bar in pixel. gonna rewrite to smth better i think
-const COLOR_ARGB: u32 = 0xFF000000; // background of this sheisse
-
-#[tokio::main]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // main config
-    let c = bar::read_the_config();
+    let config = bar::read_the_config();
     println!("{:?}", c);
+    let heigh = config.general.height as u32;
 
     let cons = Connection::connect_to_env().expect("Failed to connect to Wayland compositor");
     let (globals, mut event_queue) = registry_queue_init(&cons).unwrap(); // sppam
@@ -45,16 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let layer_shell = LayerShell::bind(&globals, &qh).expect("Layer shell not available");
     let shm = Shm::bind(&globals, &qh).expect("wl_shm not available");
     let surface = compositor.create_surface(&qh);
-
-    // callop stack
-    let mut event_loop: EventLoop<()> = EventLoop::try_new().unwrap();
-    let loop_handle = event_loop.handle();
     
-    // temporary. add some recursive search idk later to find smth on the system
-    let font = FontRef::try_from_slice(include_bytes!("/usr/share/fonts/TTF/Iosevka-Regular.ttf"))?;
-    //zbus
-    let greeter = connections::Greeter { count: 0 };
-    let _conn = connectionh
     let layer = layer_shell.create_layer_surface(
         &qh,
         surface,
@@ -63,10 +51,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         None, // pics the o
     );
     layer.set_anchor(Anchor::TOP | Anchor::LEFT | Anchor::RIGHT);
-    layer.set_size(0, HEIGHT);
-    layer.set_exclusive_zone(HEIGHT as i32);
+    layer.set_size(0, height);
+    layer.set_exclusive_zone(height as i32);
     layer.set_keyboard_interactivity(KeyboardInteractivity::None);
     layer.commit();
+
+    let font: &'static [u8] = Box::leak(std::fs::read("extra/fonts/Iosevka-Regular.ttf")?.into_boxed_slice());
+    let font = FontRef::try_from_slice(font_bytes)?;
+    let text_renderer = TextRenderer::new(font, height as f32 * 0.55);
 
     let pool = SlotPool::new(256 * 1024, &shm).expect("Failed to create shm pool");
     let mut app = App {
