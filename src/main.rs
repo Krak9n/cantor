@@ -1,10 +1,11 @@
 mod modules;
-use modules::{
-    battery, cpu, memory, time, volume, workspaces,
-};
+use modules::{battery, cpu, memory, time, volume, workspaces};
 mod bar;
 mod connections;
 
+use ab_glyph::{Font, FontRef, Glyph, point};
+use calloop::EventLoop;
+use calloop_wayland_source::WaylandSource;
 use smithay_client_toolkit::{
     compositor::{CompositorHandler, CompositorState},
     delegate_compositor, delegate_layer, delegate_output, delegate_registry, delegate_shm,
@@ -12,76 +13,19 @@ use smithay_client_toolkit::{
     registry::{ProvidesRegistryState, RegistryState},
     registry_handlers,
     shell::{
-       WaylandSurface,
+        WaylandSurface,
         wlr_layer::{
-            Anchor, KeyboardInteractivity, Layer, LayerShell, LayerShellHandler, LayerSurface, LayerSurfaceConfigure,
+            Anchor, KeyboardInteractivity, Layer, LayerShell, LayerShellHandler, LayerSurface,
+            LayerSurfaceConfigure,
         },
     },
-    shm::{slot::SlotPool, Shm, ShmHandler},
+    shm::{Shm, ShmHandler, slot::SlotPool},
 };
 use wayland_client::{
+    Connection, QueueHandle,
     globals::registry_queue_init,
     protocol::{wl_output, wl_shm, wl_surface},
-    Connection, QueueHandle,
 };
-use calloop::EventLoop;
-use calloop_wayland_source::WaylandSource;
-use ab_glyph::{point, Font, FontRef, Glyph};
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // main config
-    let config = bar::read_the_config();
-    println!("{:?}", c);
-    let heigh = config.general.height as u32;
-
-    let cons = Connection::connect_to_env().expect("Failed to connect to Wayland compositor");
-    let (globals, mut event_queue) = registry_queue_init(&cons).unwrap(); // sppam
-    let qh = event_queue.handle(); // our connection
-
-    let compositor = CompositorState::bind(&globals, &qh).expect("wl_compositor is not available");
-    let layer_shell = LayerShell::bind(&globals, &qh).expect("Layer shell not available");
-    let shm = Shm::bind(&globals, &qh).expect("wl_shm not available");
-    let surface = compositor.create_surface(&qh);
-    
-    let layer = layer_shell.create_layer_surface(
-        &qh,
-        surface,
-        Layer::Top,
-        Some("cantor"),
-        None, // pics the o
-    );
-    layer.set_anchor(Anchor::TOP | Anchor::LEFT | Anchor::RIGHT);
-    layer.set_size(0, height);
-    layer.set_exclusive_zone(height as i32);
-    layer.set_keyboard_interactivity(KeyboardInteractivity::None);
-    layer.commit();
-
-    let font: &'static [u8] = Box::leak(std::fs::read("extra/fonts/Iosevka-Regular.ttf")?.into_boxed_slice());
-    let font = FontRef::try_from_slice(font_bytes)?;
-    let text_renderer = TextRenderer::new(font, height as f32 * 0.55);
-
-    let pool = SlotPool::new(256 * 1024, &shm).expect("Failed to create shm pool");
-    let mut app = App {
-        registry_state: RegistryState::new(&globals),
-        output_state: OutputState::new(&globals, &qh),
-        shm,
-        pool,
-        layer,
-        width: 0,
-        height: HEIGHT,
-        configured: true,
-        exit: false,
-    };
-
-    loop { // here we go again
-        event_queue.blocking_dispatch(&mut app).unwrap();
-
-        if app.exit {
-            break Ok(()) // stupid ass end
-        }
-    }
-}
-
 
 struct App {
     registry_state: RegistryState,
@@ -92,7 +36,7 @@ struct App {
     width: u32,
     height: u32,
     configured: bool,
-    exit:bool,
+    exit: bool,
 }
 
 impl App {
@@ -121,21 +65,53 @@ impl App {
 }
 
 impl CompositorHandler for App {
-    fn scale_factor_changed(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &wl_surface::WlSurface, _: i32) {}
-    fn transform_changed(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &wl_surface::WlSurface, _: wl_output::Transform) {}
+    fn scale_factor_changed(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_surface::WlSurface,
+        _: i32,
+    ) {
+    }
+    fn transform_changed(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_surface::WlSurface,
+        _: wl_output::Transform,
+    ) {
+    }
     fn frame(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_surface::WlSurface, _: u32) {
         self.draw(qh);
     }
-    fn surface_enter(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &wl_surface::WlSurface, _: &wl_output::WlOutput) {}
-    fn surface_leave(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &wl_surface::WlSurface, _: &wl_output::WlOutput) {}
+    fn surface_enter(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_surface::WlSurface,
+        _: &wl_output::WlOutput,
+    ) {
+    }
+    fn surface_leave(
+        &mut self,
+        _: &Connection,
+        _: &QueueHandle<Self>,
+        _: &wl_surface::WlSurface,
+        _: &wl_output::WlOutput,
+    ) {
+    }
 }
+delegate_compositor!(App);
 
 impl OutputHandler for App {
-    fn output_state(&mut self) -> &mut OutputState { &mut self.output_state }
+    fn output_state(&mut self) -> &mut OutputState {
+        &mut self.output_state
+    }
     fn new_output(&mut self, _: &Connection, _: &QueueHandle<App>, _: wl_output::WlOutput) {}
     fn update_output(&mut self, _: &Connection, _: &QueueHandle<App>, _: wl_output::WlOutput) {}
     fn output_destroyed(&mut self, _: &Connection, _: &QueueHandle<App>, _: wl_output::WlOutput) {}
 }
+delegate_output!(App);
 
 impl LayerShellHandler for App {
     fn closed(&mut self, _: &Connection, _: &QueueHandle<Self>, _: &LayerSurface) {
@@ -148,25 +124,87 @@ impl LayerShellHandler for App {
         qh: &QueueHandle<Self>,
         _: &LayerSurface,
         configure: LayerSurfaceConfigure,
-        serial: u32) {
+        serial: u32,
+    ) {
         self.width = configure.new_size.0.max(1); // wtf
-        self.height = if configure.new_size.1 == 0 { HEIGHT } else { configure.new_size.1 };
+        self.height = if configure.new_size.1 == 0 {
+            HEIGHT
+        } else {
+            configure.new_size.1
+        };
         self.configured = true;
         self.draw(qh); // restart
     }
 }
+delegate_layer!(App);
 
 impl ShmHandler for App {
-    fn shm_state(&mut self) -> &mut Shm { &mut self.shm }
+    fn shm_state(&mut self) -> &mut Shm {
+        &mut self.shm
+    }
 }
+delegate_shm!(App);
 
 impl ProvidesRegistryState for App {
-    fn registry(&mut self) -> &mut RegistryState { &mut self.registry_state }
+    fn registry(&mut self) -> &mut RegistryState {
+        &mut self.registry_state
+    }
     registry_handlers![OutputState];
 }
-
-delegate_compositor!(App);
-delegate_output!(App);
-delegate_shm!(App);
-delegate_layer!(App);
 delegate_registry!(App);
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // main config
+    let config = bar::read_the_config();
+    println!("{:?}", config);
+    let heigh = config.general.height as u32;
+
+    let cons = Connection::connect_to_env().expect("Failed to connect to Wayland compositor");
+    let (globals, mut event_queue) = registry_queue_init(&cons).unwrap(); // sppam
+    let qh = event_queue.handle(); // our connection
+
+    let compositor = CompositorState::bind(&globals, &qh).expect("wl_compositor is not available");
+    let layer_shell = LayerShell::bind(&globals, &qh).expect("Layer shell not available");
+    let shm = Shm::bind(&globals, &qh).expect("wl_shm not available");
+    let surface = compositor.create_surface(&qh);
+
+    let layer = layer_shell.create_layer_surface(
+        &qh,
+        surface,
+        Layer::Top,
+        Some("cantor"),
+        None, // pics the o
+    );
+    layer.set_anchor(Anchor::TOP | Anchor::LEFT | Anchor::RIGHT);
+    layer.set_size(0, height);
+    layer.set_exclusive_zone(height as i32);
+    layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+    layer.commit();
+
+    let font: &'static [u8] =
+        Box::leak(std::fs::read("extra/fonts/Iosevka-Regular.ttf")?.into_boxed_slice());
+    let font = FontRef::try_from_slice(font_bytes)?;
+    let text_renderer = TextRenderer::new(font, height as f32 * 0.55);
+
+    let pool = SlotPool::new(256 * 1024, &shm).expect("Failed to create shm pool");
+    let mut app = App {
+        registry_state: RegistryState::new(&globals),
+        output_state: OutputState::new(&globals, &qh),
+        shm,
+        pool,
+        layer,
+        width: 0,
+        height: HEIGHT,
+        configured: true,
+        exit: false,
+    };
+
+    loop {
+        // here we go again
+        event_queue.blocking_dispatch(&mut app).unwrap();
+
+        if app.exit {
+            break Ok(()); // stupid ass end
+        }
+    }
+}

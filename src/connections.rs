@@ -9,6 +9,6 @@ struct Greeter {
 impl Greeter {
     async fn hola(&mut self, name: &str) -> String {
         self.count += 1;
-        format!("yo me {}, called: {}", name, self.count);
+        format!("yo me {}, called: {}", name, self.count)
     }
 }
