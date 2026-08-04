@@ -35,6 +35,7 @@ struct App {
     layer: LayerSurface,
     width: u32,
     height: u32,
+    default_height: u32,
     configured: bool,
     exit: bool,
 }
@@ -127,10 +128,9 @@ impl LayerShellHandler for App {
         serial: u32,
     ) {
         self.width = configure.new_size.0.max(1); // wtf
-        self.height = if configure.new_size.1 == 0 {
-            HEIGHT
-        } else {
-            configure.new_size.1
+        self.height = match configure.new_size.1 {
+            0 => self.default_height,
+            _ => configure.new_size.1,
         };
         self.configured = true;
         self.draw(qh); // restart
@@ -157,7 +157,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // main config
     let config = bar::read_the_config();
     println!("{:?}", config);
-    let heigh = config.general.height as u32;
+    let height = config.general.height as u32;
 
     let cons = Connection::connect_to_env().expect("Failed to connect to Wayland compositor");
     let (globals, mut event_queue) = registry_queue_init(&cons).unwrap(); // sppam
@@ -194,7 +194,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         pool,
         layer,
         width: 0,
-        height: HEIGHT,
+        height,
+        default_height: height,
         configured: true,
         exit: false,
     };

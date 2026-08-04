@@ -10,9 +10,9 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug, Deserialize)]
 enum ModulePosition {
-    left,
-    right,
-    center,
+    Left,
+    Right,
+    Center,
 }
 
 // firstly construct the bar
@@ -20,7 +20,7 @@ enum ModulePosition {
 #[derive(Debug, Deserialize)]
 pub struct Config {
     enabled: EnabledModules,
-    general: GeneralSettings,
+    pub general: GeneralSettings,
     modules: ModulesConfig,
 }
 
@@ -34,9 +34,9 @@ struct EnabledModules {
 }
 
 #[derive(Debug, Deserialize)]
-struct GeneralSettings {
+pub struct GeneralSettings {
     color: String,
-    height: usize,
+    pub height: usize,
     border: bool,
     border_color: String,
 }
